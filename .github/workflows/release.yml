@@ -72,6 +72,17 @@ jobs:
         with:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
+      - name: Skip frontend build (already downloaded)
+        shell: bash
+        run: |
+          # Empty the beforeBuildCommand in tauri.conf.json so tauri-action doesn't try to run it
+          # Use different sed syntax for macOS and Linux if needed, or just a simple replacement
+          if [[ "${{ matrix.platform }}" == "macos-latest" ]]; then
+            sed -i '' 's/"beforeBuildCommand": ".*"/"beforeBuildCommand": ""/g' src-tauri/tauri.conf.json
+          else
+            sed -i 's/"beforeBuildCommand": ".*"/"beforeBuildCommand": ""/g' src-tauri/tauri.conf.json
+          fi
+
       - name: Build the app
         uses: tauri-apps/tauri-action@v0
         env:
@@ -93,7 +104,3 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
-          # Use a custom tauri-action flag or just let it see the already-built frontend.
-          # We don't install node/pnpm here, so we must ensure tauri build doesn't crash on missing 'pnpm generate'.
-          # tauri-action allows providing a custom config or we can just empty the beforeBuildCommand.
-          beforeBuildCommand: ""
