@@ -137,8 +137,8 @@ We use `package.json` as the single source of truth for the application version.
 2. **Sync Version**: Run the sync script to update Tauri configuration files.
 
 ```bash
-# Example: Bumping to 1.1.0
-npm version 1.1.0 --no-git-tag-version
+# Example: Bumping to 0.0.1
+npm version 0.0.1 --no-git-tag-version
 pnpm run sync-version
 ```
 
@@ -146,9 +146,9 @@ pnpm run sync-version
 
 ```bash
 git add .
-git commit -m "chore: release v1.1.0"
-git tag v1.1.0
-git push origin v1.1.0
+git commit -m "chore: release v0.0.1"
+git tag v0.0.1
+git push origin v0.0.1
 ```
 
 4. **Automated Release**: The GitHub Actions workflow will detect the tag and build releases for all platforms.
