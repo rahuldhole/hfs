@@ -46,14 +46,18 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-latest
+          - os: macos-14
             target: aarch64-apple-darwin
-          - os: macos-latest
+            artifact_suffix: macos-arm64
+          - os: macos-14
             target: x86_64-apple-darwin
+            artifact_suffix: macos-x64
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
+            artifact_suffix: linux-x64
           - os: windows-latest
             target: x86_64-pc-windows-msvc
+            artifact_suffix: windows-x64
 
     runs-on: ${{ matrix.os }}
 
@@ -103,7 +107,6 @@ jobs:
         with:
           targets: ${{ matrix.target }}
 
-      # This prevents Tauri from trying to run 'pnpm build' again
       - name: Disable Tauri frontend build hook
         shell: bash
         run: |
@@ -113,14 +116,59 @@ jobs:
             sed -i 's/"beforeBuildCommand": ".*"/"beforeBuildCommand": ""/' src-tauri/tauri.conf.json
           fi
 
-      - name: Build & Release
-        uses: tauri-apps/tauri-action@v0
+      - name: Build Tauri app
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          # Set clear bundle names
+          TAURI_BUNDLE_NAME: "hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}"
+        run: |
+          pnpm tauri build --target ${{ matrix.target }}
+
+      - name: Remove macOS quarantine attribute
+        if: runner.os == 'macOS'
+        run: |
+          # This removes the "app is damaged" warning on macOS
+          find target/release/bundle -name "*.app" -exec xattr -cr {} \;
+          find target/release/bundle -name "*.dmg" -exec xattr -cr {} \;
+
+      - name: Rename and upload artifacts
+        run: |
+          cd target/release/bundle
+          
+          # Rename files for clarity
+          for file in *; do
+            if [[ "$file" == *.dmg ]]; then
+              new_name="hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.dmg"
+              mv "$file" "$new_name"
+              echo "ASSET_PATH=$(pwd)/$new_name" >> $GITHUB_ENV
+              
+            elif [[ "$file" == *.msi ]]; then
+              new_name="hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.msi"
+              mv "$file" "$new_name"
+              echo "ASSET_PATH=$(pwd)/$new_name" >> $GITHUB_ENV
+              
+            elif [[ "$file" == *.AppImage ]]; then
+              new_name="hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.AppImage"
+              mv "$file" "$new_name"
+              echo "ASSET_PATH=$(pwd)/$new_name" >> $GITHUB_ENV
+              
+            elif [[ "$file" == *.deb ]]; then
+              new_name="hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.deb"
+              mv "$file" "$new_name"
+              echo "ASSET_PATH=$(pwd)/$new_name" >> $GITHUB_ENV
+              
+            elif [[ "$file" == *.exe ]]; then
+              new_name="hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.exe"
+              mv "$file" "$new_name"
+              echo "ASSET_PATH=$(pwd)/$new_name" >> $GITHUB_ENV
+            fi
+          done
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
         with:
-          tagName: ${{ github.ref_name }}
-          releaseName: "HFS ${{ github.ref_name }}"
-          releaseBody: |
+          tag_name: ${{ github.ref_name }}
+          name: "HFS ${{ github.ref_name }}"
+          body: |
             ## 🚀 What's New in ${{ github.ref_name }}
             
             Please refer to the [**CHANGELOG**](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for a detailed list of changes.
@@ -131,10 +179,31 @@ jobs:
             
             Find the installer for your operating system in the **Assets** section below:
             
-            | Platform | File Type |
-            |----------|-----------|
-            | **Windows** | `.msi`, `.exe` |
-            | **macOS** | `.dmg` |
-            | **Linux** | `.deb`, `.AppImage` |
+            | Platform | Architecture | File Type |
+            |----------|--------------|-----------|
+            | **Windows** | x64 (64-bit) | `.msi`, `.exe` |
+            | **macOS (Intel)** | x64 (64-bit) | `.dmg` |
+            | **macOS (Apple Silicon)** | ARM64 | `.dmg` |
+            | **Linux** | x64 (64-bit) | `.deb`, `.AppImage` |
+            
+            ---
+            
+            ### 🍎 macOS Note
+            Since this is an open-source application without code signing, macOS may show a warning. To run it:
+            1. Right-click the `.dmg` file → "Open"
+            2. Click "Open" in the security dialog
+            3. Or run: `sudo xattr -cr /Applications/HFS.app`
+            
+            ---
+            
+            ### 🔧 Development
+            ```bash
+            git clone https://github.com/${{ github.repository }}.git
+            cd hfs
+            pnpm install
+            pnpm tauri dev
+            ```
+          files: |
+            target/release/bundle/hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.*
+          draft: false
           prerelease: false
-          args: --target ${{ matrix.target }}
