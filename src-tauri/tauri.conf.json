@@ -1,13 +1,13 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
   "productName": "hfs",
-  "version": "0.1.0",
+  "version": "0.0.1",
   "identifier": "com.tauri.dev",
   "build": {
     "frontendDist": ".output/public",
     "devUrl": "http://localhost:3000",
-    "beforeDevCommand": "npm run dev",
-    "beforeBuildCommand": "npm run generate"
+    "beforeDevCommand": "pnpm dev",
+    "beforeBuildCommand": "pnpm generate"
   },
   "app": {
     "windows": [

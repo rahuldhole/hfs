@@ -53,13 +53,14 @@ cargo build --release
 
 ```bash
 # Install dependencies
-npm install
+pnpm install
 
 # Dev server
-npm run dev
+pnpm dev
+npx tauri dev
 
 # Build
-npm run build
+pnpm build
 ```
 
 ---
@@ -117,7 +118,7 @@ cargo build
 ### Missing Tauri Plugins (Frontend)
 
 ```bash
-npm install @tauri-apps/plugin-dialog @tauri-apps/plugin-shell
+pnpm install @tauri-apps/plugin-dialog @tauri-apps/plugin-shell
 ```
 
 ### Permission Errors
@@ -130,14 +131,27 @@ Check `src-tauri/capabilities/default.json` includes:
 
 ## 📦 Release Process
 
-Releases are automated via GitHub Actions. To trigger a release:
+We use `package.json` as the single source of truth for the application version.
+
+1. **Bump Version**: Update the version in `package.json`.
+2. **Sync Version**: Run the sync script to update Tauri configuration files.
 
 ```bash
-git tag v1.0.0
-git push origin v1.0.0
+# Example: Bumping to 1.1.0
+npm version 1.1.0 --no-git-tag-version
+pnpm run sync-version
 ```
 
-The workflow builds for macOS, Windows, and Linux, then uploads to GitHub Releases.
+3. **Commit & Tag**:
+
+```bash
+git add .
+git commit -m "chore: release v1.1.0"
+git tag v1.1.0
+git push origin v1.1.0
+```
+
+4. **Automated Release**: The GitHub Actions workflow will detect the tag and build releases for all platforms.
 
 ---
 

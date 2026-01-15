@@ -1,13 +1,16 @@
 {
   "name": "hfs",
   "type": "module",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "sync-version": "node scripts/sync-version.js",
+    "tauri": "tauri"
   },
   "dependencies": {
     "@tailwindcss/postcss": "^4.1.18",
