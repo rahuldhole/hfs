@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { invoke } from '@tauri-apps/api/core'
 import { open } from '@tauri-apps/plugin-dialog'
+import { open as openShell } from '@tauri-apps/plugin-shell'
 import {
   Folder, File as FileIcon, Play, Square, Network,
   Plus, Search, LayoutGrid, List, HardDrive,
@@ -115,6 +116,22 @@ const filteredItems = computed(() => {
     item.toLowerCase().includes(searchQuery.value.toLowerCase())
   )
 })
+
+async function copyToClipboard(text: string) {
+  try {
+    await navigator.clipboard.writeText(text)
+  } catch (e) {
+    console.error('Failed to copy', e)
+  }
+}
+
+async function openUrl(url: string) {
+  try {
+    await openShell(url)
+  } catch (e) {
+    console.error('Failed to open url', e)
+  }
+}
 </script>
 
 <template>
@@ -161,9 +178,34 @@ const filteredItems = computed(() => {
           <div v-if="isRunning && ips.length > 0" class="space-y-2">
             <div v-for="ip in ips" :key="ip" class="group relative">
               <div
-                class="p-3 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-blue-500/50 transition-colors cursor-pointer group-hover:shadow-[0_0_15px_-3px_rgba(59,130,246,0.15)]">
-                <div class="text-[10px] text-zinc-500 font-mono mb-1">LAN URL</div>
-                <div class="font-mono text-blue-400 text-sm truncate">http://{{ ip }}:{{ port }}</div>
+                class="p-3 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-blue-500/50 transition-colors group-hover:shadow-[0_0_15px_-3px_rgba(59,130,246,0.15)] flex justify-between items-center group/card">
+                <div>
+                  <div class="text-[10px] text-zinc-500 font-mono mb-1">LAN URL</div>
+                  <div class="font-mono text-blue-400 text-sm truncate">http://{{ ip }}:{{ port }}</div>
+                </div>
+                <div class="flex gap-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
+                  <button @click="copyToClipboard(`http://${ip}:${port}`)"
+                    class="p-1.5 hover:bg-zinc-800 rounded text-zinc-400 hover:text-white" title="Copy">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
+                      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+                      <path d="M12 11h4" />
+                      <path d="M12 16h4" />
+                      <path d="M8 11h.01" />
+                      <path d="M8 16h.01" />
+                    </svg>
+                  </button>
+                  <button @click="openUrl(`http://${ip}:${port}`)"
+                    class="p-1.5 hover:bg-zinc-800 rounded text-zinc-400 hover:text-white" title="Open">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+                      <polyline points="15 3 21 3 21 9" />
+                      <line x1="10" y1="14" x2="21" y2="3" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -294,7 +336,7 @@ const filteredItems = computed(() => {
                   <FileIcon class="w-14 h-14 text-zinc-400" />
                   <span
                     class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-[8px] font-bold text-zinc-950 pt-2">{{
-                      getFileExt(item).slice(0,4) }}</span>
+                      getFileExt(item).slice(0, 4) }}</span>
                 </div>
               </div>
 
