@@ -3,24 +3,26 @@ name: Release
 on:
   push:
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   build-frontend:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
-      - name: Install pnpm
-        uses: pnpm/action-setup@v2
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
           version: 9
+          run_install: false
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'pnpm'
+          node-version: 20
+          cache: pnpm
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -38,22 +40,25 @@ jobs:
     needs: build-frontend
     permissions:
       contents: write
+
     strategy:
       fail-fast: false
       matrix:
         include:
-          - platform: 'macos-latest'
-            args: '--target aarch64-apple-darwin'
-          - platform: 'macos-latest'
-            args: '--target x86_64-apple-darwin'
-          - platform: 'ubuntu-22.04'
-            args: ''
-          - platform: 'windows-latest'
-            args: ''
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: macos-latest
+            target: x86_64-apple-darwin
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
 
-    runs-on: ${{ matrix.platform }}
+    runs-on: ${{ matrix.os }}
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
 
       - name: Download frontend build
         uses: actions/download-artifact@v4
@@ -61,46 +66,44 @@ jobs:
           name: frontend-build
           path: .output/public
 
-      - name: Install dependencies (Ubuntu)
-        if: matrix.platform == 'ubuntu-22.04'
+      - name: Linux dependencies
+        if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf
 
-      - name: Install Rust stable
+      - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+          targets: ${{ matrix.target }}
 
-      - name: Skip frontend build (already downloaded)
+      - name: Disable Tauri frontend build
         shell: bash
         run: |
-          # Empty the beforeBuildCommand in tauri.conf.json so tauri-action doesn't try to run it
-          # Use different sed syntax for macOS and Linux if needed, or just a simple replacement
-          if [[ "${{ matrix.platform }}" == "macos-latest" ]]; then
-            sed -i '' 's/"beforeBuildCommand": ".*"/"beforeBuildCommand": ""/g' src-tauri/tauri.conf.json
+          if [[ "$RUNNER_OS" == "macOS" ]]; then
+            sed -i '' 's/"beforeBuildCommand": ".*"/"beforeBuildCommand": ""/' src-tauri/tauri.conf.json
           else
-            sed -i 's/"beforeBuildCommand": ".*"/"beforeBuildCommand": ""/g' src-tauri/tauri.conf.json
+            sed -i 's/"beforeBuildCommand": ".*"/"beforeBuildCommand": ""/' src-tauri/tauri.conf.json
           fi
 
-      - name: Build the app
-        uses: tauri-apps/tauri-action@v0
+      - name: Build & Release
+        uses: tauri-apps/tauri-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: ${{ github.ref_name }}
-          releaseName: 'HFS ${{ github.ref_name }}'
+          releaseName: "HFS ${{ github.ref_name }}"
           releaseBody: |
-            See the [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for details.
-            
+            See the [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+
             ## Downloads
-            
-            | Platform | File |
-            |----------|------|
-            | macOS (Apple Silicon) | `HFS_aarch64.dmg` |
-            | macOS (Intel) | `HFS_x64.dmg` |
-            | Windows | `HFS_x64.msi` |
-            | Linux | `HFS_amd64.deb` / `HFS_amd64.AppImage` |
-          releaseDraft: false
+            - macOS (Apple Silicon)
+            - macOS (Intel)
+            - Windows
+            - Linux
           prerelease: false
-          args: ${{ matrix.args }}
+          args: --target ${{ matrix.target }}
