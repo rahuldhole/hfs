@@ -388,6 +388,11 @@ async fn root_handler() -> Html<&'static str> {
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+        
+        /* Transitions */
+        .list-move, .list-enter-active, .list-leave-active { transition: all 0.3s ease; }
+        .list-enter-from, .list-leave-to { opacity: 0; transform: translateY(10px); }
+        .list-leave-active { position: absolute; }
     </style>
 </head>
 <body class="bg-zinc-950 text-zinc-200 font-sans min-h-screen flex flex-col">
@@ -409,9 +414,10 @@ async fn root_handler() -> Html<&'static str> {
                 </div>
                 
                 <div class="flex items-center gap-2 sm:gap-3">
-                     <span class="text-[10px] sm:text-xs font-medium bg-emerald-500/10 text-emerald-400 px-2 sm:px-3 py-1 rounded-full border border-emerald-500/30 flex items-center gap-1.5">
-                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-                        <span class="hidden sm:inline">Connected</span>
+                     <span :class="isConnected ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : 'bg-red-500/10 text-red-400 border-red-500/30'" 
+                           class="text-[10px] sm:text-xs font-medium px-2 sm:px-3 py-1 rounded-full border flex items-center gap-1.5 transition-colors duration-300">
+                        <span :class="isConnected ? 'bg-emerald-500' : 'bg-red-500'" class="w-1.5 h-1.5 rounded-full animate-pulse"></span>
+                        <span class="hidden sm:inline">{{ isConnected ? 'Connected' : 'Disconnected' }}</span>
                      </span>
                 </div>
             </div>
@@ -489,7 +495,8 @@ async fn root_handler() -> Html<&'static str> {
                     </div>
 
                     <!-- Grid View -->
-                    <div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+                    <div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4 relative">
+                        <TransitionGroup name="list">
                         <div v-for="item in items" :key="item.path" 
                              @click.exact="toggleSelect(item)"
                              @dblclick="handleOpen(item)"
@@ -517,7 +524,8 @@ async fn root_handler() -> Html<&'static str> {
                                     <i data-lucide="file" class="w-12 h-14 sm:w-14 sm:h-16 text-zinc-500"></i>
                                     <span class="absolute bottom-3 text-[8px] sm:text-[9px] font-bold text-zinc-400 uppercase">{{ getExt(item.name) }}</span>
                                 </div>
-                            </div>
+                                </TransitionGroup>
+                    </div>
                             
                             <!-- Name & Size -->
                             <div class="text-xs sm:text-sm font-medium text-zinc-300 truncate w-full px-1" :title="item.name">{{ item.name }}</div>
@@ -536,6 +544,8 @@ async fn root_handler() -> Html<&'static str> {
                         </div>
                         
                         <!-- Items -->
+                        <div class="relative">
+                        <TransitionGroup name="list">
                         <div v-for="item in items" :key="item.path"
                              @click.exact="toggleSelect(item)"
                              @dblclick="handleOpen(item)"
@@ -594,6 +604,7 @@ async fn root_handler() -> Html<&'static str> {
                 const loading = ref(false)
                 const viewMode = ref('grid')
                 const selectedItems = ref([])
+                const isConnected = ref(true)
 
                 const breadcrumbs = computed(() => {
                     const parts = currentPath.value.split('/').filter(p => p)
@@ -608,15 +619,24 @@ async fn root_handler() -> Html<&'static str> {
                     loading.value = true
                     try {
                         const res = await fetch(`/api/browse?path=${encodeURIComponent(path)}`)
+                        if (!res.ok) throw new Error('Network response was not ok')
                         items.value = await res.json()
                         currentPath.value = path
                         selectedItems.value = []
+                        isConnected.value = true
                     } catch (e) {
                         console.error(e)
+                        isConnected.value = false
                     } finally {
                         loading.value = false
                         setTimeout(() => lucide.createIcons(), 50)
                     }
+                }
+
+                function checkConnection() {
+                   fetch(window.location.href, { method: 'HEAD', cache: 'no-store' })
+                       .then(res => isConnected.value = res.ok)
+                       .catch(() => isConnected.value = false)
                 }
 
                 function navigate(path) {
@@ -695,10 +715,13 @@ async fn root_handler() -> Html<&'static str> {
                 onMounted(() => {
                     fetchItems('/')
                     lucide.createIcons()
+                    setInterval(checkConnection, 2000)
+                    window.addEventListener('online', () => isConnected.value = true)
+                    window.addEventListener('offline', () => isConnected.value = false)
                 })
 
                 return {
-                    items, currentPath, loading, viewMode, selectedItems,
+                    items, currentPath, loading, viewMode, selectedItems, isConnected,
                     breadcrumbs, getExt,
                     navigate, handleOpen, downloadItem, toggleSelect, isSelected,
                     clearSelection, downloadSelection, formatSize
