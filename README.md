@@ -1,75 +1,99 @@
-# Nuxt Minimal Starter
+<div align="center">
 
-Look at the [Nuxt documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+# 🌐 HFS – HTTP File Share
 
-## Setup
+**Share files instantly over your local network. No cloud. No accounts. Just drop and go.**
 
-Make sure to install dependencies:
+[![Release](https://img.shields.io/github/v/release/rahuldholehfs?style=for-the-badge&logo=github)](https://github.com/rahuldholehfs/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/rahuldholehfs/total?style=for-the-badge&logo=github)](https://github.com/rahuldholehfs/releases)
+[![License](https://img.shields.io/github/license/rahuldholehfs?style=for-the-badge)](LICENSE)
 
-```bash
-# npm
-npm install
+[📥 Download for macOS](#download) • [📥 Download for Windows](#download) • [📥 Download for Linux](#download)
 
-# pnpm
-pnpm install
+</div>
 
-# yarn
-yarn install
+---
 
-# bun
-bun install
-```
+## ✨ Features
 
-## Development Server
+| Feature | Description |
+|---------|-------------|
+| 🚀 **One-Click Sharing** | Select files or folders and start sharing instantly |
+| 🌍 **LAN Access** | Anyone on your network can download via browser |
+| 📦 **Zip Downloads** | Download entire folders or multiple files as ZIP |
+| 🎨 **Modern UI** | Beautiful dark-themed server dashboard + light client |
+| 🔒 **Private & Secure** | No internet required, files never leave your network |
+| ⚡ **Lightweight** | Built with Rust + Tauri for blazing fast performance |
 
-Start the development server on `http://localhost:3000`:
+---
 
-```bash
-# npm
-npm run dev
+## 📸 Screenshots
 
-# pnpm
-pnpm dev
+<div align="center">
 
-# yarn
-yarn dev
+### Server Dashboard
+*Control your file server with an intuitive dark-themed interface*
 
-# bun
-bun run dev
-```
+![Server Dashboard](assets/server-dashboard.png)
 
-## Production
+### Client Interface  
+*Recipients browse and download files through a clean web UI*
 
-Build the application for production:
+![Client Interface](assets/client-interface.png)
 
-```bash
-# npm
-npm run build
+</div>
 
-# pnpm
-pnpm build
+---
 
-# yarn
-yarn build
+## 📥 Download {#download}
 
-# bun
-bun run build
-```
+Download the latest release for your platform:
 
-Locally preview production build:
+| Platform | Download |
+|----------|----------|
+| **macOS (Apple Silicon)** | [Download .dmg](https://github.com/rahuldholehfs/releases/latest/download/HFS_aarch64.dmg) |
+| **macOS (Intel)** | [Download .dmg](https://github.com/rahuldholehfs/releases/latest/download/HFS_x64.dmg) |
+| **Windows** | [Download .msi](https://github.com/rahuldholehfs/releases/latest/download/HFS_x64.msi) |
+| **Linux (Debian/Ubuntu)** | [Download .deb](https://github.com/rahuldholehfs/releases/latest/download/HFS_amd64.deb) |
+| **Linux (AppImage)** | [Download .AppImage](https://github.com/rahuldholehfs/releases/latest/download/HFS_amd64.AppImage) |
 
-```bash
-# npm
-npm run preview
+> 💡 **Note**: Replace `rahuldholehfs` with your actual GitHub repository path.
 
-# pnpm
-pnpm preview
+---
 
-# yarn
-yarn preview
+## 🚀 Quick Start
 
-# bun
-bun run preview
-```
+1. **Download & Install** – Get the app for your platform above
+2. **Add Files** – Click "Add Files" or "Add Folder" to select content
+3. **Start Server** – Click the blue "Start Server" button
+4. **Share the Link** – Copy the LAN URL and send it to recipients
+5. **Done!** – They can browse and download directly from their browser
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+---
+
+## 🛠️ Tech Stack
+
+- **Frontend**: [Nuxt 4](https://nuxt.com) + [Vue 3](https://vuejs.org) + [Tailwind CSS](https://tailwindcss.com)
+- **Backend**: [Rust](https://rust-lang.org) + [Axum](https://github.com/tokio-rs/axum)
+- **Desktop**: [Tauri 2](https://tauri.app)
+- **Icons**: [Lucide](https://lucide.dev)
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Please read [MAINTENANCE.md](MAINTENANCE.md) for development setup.
+
+---
+
+## 📄 License
+
+MIT License – see [LICENSE](LICENSE) for details.
+
+---
+
+<div align="center">
+
+**Made with ❤️ for local file sharing**
+
+</div>
