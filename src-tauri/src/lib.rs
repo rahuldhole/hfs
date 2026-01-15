@@ -54,6 +54,7 @@ async fn stop_server_cmd(state: State<'_, ServiceState>) -> Result<(), String> {
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_shell::init())
         .manage(ServiceState {
             shutdown_tx: Mutex::new(None),
         })
