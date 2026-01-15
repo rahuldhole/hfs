@@ -7,9 +7,13 @@ import {
   Folder, File as FileIcon, Play, Square, Network,
   Plus, Search, LayoutGrid, List, HardDrive,
   ChevronRight, Home, Trash2, Settings, RefreshCw,
-  MoreVertical, Download, X
+  MoreVertical, Download, X, Menu, Copy, ExternalLink,
+  CheckCircle2, AlertCircle, Loader2
 } from 'lucide-vue-next'
 import './assets/css/main.css'
+
+const sidebarOpen = ref(false)
+const copyStatus = ref<{ [key: string]: boolean }>({})
 
 const isRunning = ref(false)
 const port = ref(8080)
@@ -117,9 +121,11 @@ const filteredItems = computed(() => {
   )
 })
 
-async function copyToClipboard(text: string) {
+async function copyToClipboard(text: string, key: string) {
   try {
     await navigator.clipboard.writeText(text)
+    copyStatus.value[key] = true
+    setTimeout(() => { copyStatus.value[key] = false }, 2000)
   } catch (e) {
     console.error('Failed to copy', e)
   }
@@ -132,13 +138,39 @@ async function openUrl(url: string) {
     console.error('Failed to open url', e)
   }
 }
+
+function closeSidebar() {
+  if (window.innerWidth < 1024) {
+    sidebarOpen.value = false
+  }
+}
 </script>
 
 <template>
   <div class="flex h-screen bg-zinc-950 text-zinc-200 font-sans overflow-hidden selection:bg-blue-500/30">
 
+    <!-- Mobile Header (visible on small screens) -->
+    <div
+      class="lg:hidden fixed top-0 left-0 right-0 h-14 bg-zinc-900/95 backdrop-blur-xl border-b border-zinc-800 flex items-center justify-between px-4 z-50">
+      <div class="flex items-center gap-3">
+        <div
+          class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/20">
+          <Network class="w-5 h-5 text-white" />
+        </div>
+        <span class="font-bold text-lg tracking-tight text-white">HFS</span>
+      </div>
+      <button @click="sidebarOpen = !sidebarOpen" class="p-2 hover:bg-zinc-800 rounded-lg transition-colors">
+        <component :is="sidebarOpen ? X : Menu" class="w-5 h-5" />
+      </button>
+    </div>
+
+    <!-- Sidebar Overlay (mobile) -->
+    <div v-if="sidebarOpen" @click="sidebarOpen = false"
+      class="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-40 animate-in fade-in duration-200"></div>
+
     <!-- Sidebar -->
-    <aside class="w-64 bg-zinc-900/50 border-r border-zinc-800 flex flex-col shrink-0 backdrop-blur-xl">
+    <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
+      class="fixed lg:relative w-72 lg:w-64 h-full bg-zinc-900/95 lg:bg-zinc-900/50 border-r border-zinc-800 flex flex-col shrink-0 backdrop-blur-xl z-50 transition-transform duration-300 ease-out">
       <!-- App Brand -->
       <div class="h-14 flex items-center px-4 border-b border-zinc-800 gap-3">
         <div
@@ -178,39 +210,36 @@ async function openUrl(url: string) {
           <div v-if="isRunning && ips.length > 0" class="space-y-2">
             <div v-for="ip in ips" :key="ip" class="group relative">
               <div
-                class="p-3 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-blue-500/50 transition-colors group-hover:shadow-[0_0_15px_-3px_rgba(59,130,246,0.15)] flex justify-between items-center group/card">
-                <div>
-                  <div class="text-[10px] text-zinc-500 font-mono mb-1">LAN URL</div>
-                  <div class="font-mono text-blue-400 text-sm truncate">http://{{ ip }}:{{ port }}</div>
+                class="p-3 rounded-xl bg-zinc-900/80 border border-zinc-800 hover:border-blue-500/50 transition-all duration-300 group-hover:shadow-[0_0_20px_-3px_rgba(59,130,246,0.2)]">
+                <div class="flex items-center justify-between mb-2">
+                  <div class="text-[10px] text-zinc-500 font-medium uppercase tracking-wider">LAN URL</div>
+                  <div class="flex items-center gap-1">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span class="text-[10px] text-emerald-400">Live</span>
+                  </div>
                 </div>
-                <div class="flex gap-2 opacity-0 group-hover/card:opacity-100 transition-opacity">
-                  <button @click="copyToClipboard(`http://${ip}:${port}`)"
-                    class="p-1.5 hover:bg-zinc-800 rounded text-zinc-400 hover:text-white" title="Copy">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <rect width="8" height="4" x="8" y="2" rx="1" ry="1" />
-                      <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-                      <path d="M12 11h4" />
-                      <path d="M12 16h4" />
-                      <path d="M8 11h.01" />
-                      <path d="M8 16h.01" />
-                    </svg>
+                <div class="font-mono text-blue-400 text-sm mb-3 break-all">http://{{ ip }}:{{ port }}</div>
+                <div class="flex gap-2">
+                  <button @click="copyToClipboard(`http://${ip}:${port}`, ip)"
+                    class="flex-1 h-8 rounded-lg text-xs font-medium flex items-center justify-center gap-1.5 transition-all duration-200"
+                    :class="copyStatus[ip] ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' : 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700'">
+                    <component :is="copyStatus[ip] ? CheckCircle2 : Copy" class="w-3.5 h-3.5" />
+                    {{ copyStatus[ip] ? 'Copied!' : 'Copy' }}
                   </button>
                   <button @click="openUrl(`http://${ip}:${port}`)"
-                    class="p-1.5 hover:bg-zinc-800 rounded text-zinc-400 hover:text-white" title="Open">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                      stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-                      <polyline points="15 3 21 3 21 9" />
-                      <line x1="10" y1="14" x2="21" y2="3" />
-                    </svg>
+                    class="flex-1 h-8 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium flex items-center justify-center gap-1.5 transition-colors shadow-lg shadow-blue-500/20">
+                    <ExternalLink class="w-3.5 h-3.5" />
+                    Open
                   </button>
                 </div>
               </div>
             </div>
           </div>
-          <div v-else class="p-4 rounded-lg border border-dashed border-zinc-800 text-center text-zinc-600 text-xs">
-            Start server to view connection details
+          <div v-else class="p-6 rounded-xl bg-zinc-900/50 border border-dashed border-zinc-800 text-center">
+            <div class="w-12 h-12 rounded-full bg-zinc-800 flex items-center justify-center mx-auto mb-3">
+              <Network class="w-6 h-6 text-zinc-600" />
+            </div>
+            <p class="text-zinc-500 text-xs">Start server to view<br />connection details</p>
           </div>
         </div>
       </div>
@@ -232,55 +261,62 @@ async function openUrl(url: string) {
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col min-w-0 bg-background">
+    <main class="flex-1 flex flex-col min-w-0 bg-zinc-950 pt-14 lg:pt-0">
 
       <!-- Top Navigation / Toolbar -->
       <header
-        class="h-14 border-b border-zinc-800 flex items-center justify-between px-4 bg-zinc-900/80 backdrop-blur top-0 sticky z-10">
+        class="h-14 border-b border-zinc-800 flex items-center justify-between px-4 bg-zinc-900/80 backdrop-blur top-14 lg:top-0 sticky z-10">
         <!-- Breadcrumbs / Path -->
         <div class="flex items-center gap-2 text-sm text-zinc-400 overflow-hidden">
-          <button class="p-1.5 hover:bg-zinc-800 rounded-md transition-colors text-blue-400">
+          <button class="p-1.5 hover:bg-zinc-800 rounded-lg transition-colors text-blue-400">
             <Home class="w-4 h-4" />
           </button>
           <ChevronRight class="w-4 h-4 text-zinc-600 shrink-0" />
-          <span class="font-medium text-zinc-200">Shared Content</span>
-          <span class="px-2 py-0.5 rounded-full bg-zinc-800 text-xs text-zinc-500">{{ sharedItems.length }}</span>
+          <span class="font-medium text-zinc-200 hidden sm:inline">Shared Content</span>
+          <span class="font-medium text-zinc-200 sm:hidden">Shared</span>
+          <span class="px-2 py-0.5 rounded-full bg-zinc-800 text-xs text-zinc-500 font-medium">{{ sharedItems.length
+            }}</span>
         </div>
 
         <!-- Search & Actions -->
         <div class="flex items-center gap-2">
           <!-- Search -->
-          <div class="relative group hidden sm:block">
+          <div class="relative group">
             <Search
               class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 group-focus-within:text-blue-400 transition-colors" />
             <input v-model="searchQuery" type="text" placeholder="Search..."
-              class="h-9 w-64 bg-zinc-900 border border-zinc-800 rounded-lg pl-9 pr-4 text-sm text-zinc-300 placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all font-sans">
+              class="h-9 w-40 sm:w-64 bg-zinc-900 border border-zinc-800 rounded-lg pl-9 pr-4 text-sm text-zinc-300 placeholder:text-zinc-600 focus:outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/50 transition-all font-sans">
           </div>
         </div>
       </header>
 
       <!-- Action Bar -->
-      <div class="h-12 border-b border-zinc-800 flex items-center px-4 gap-2 bg-zinc-950/50">
-        <div class="flex items-center gap-1">
+      <div
+        class="h-12 border-b border-zinc-800 flex items-center px-4 gap-2 bg-zinc-950/50 overflow-x-auto scrollbar-hide">
+        <div class="flex items-center gap-1 shrink-0">
           <button @click="selectFiles"
-            class="h-8 px-3 rounded-lg hover:bg-zinc-800 text-sm font-medium flex items-center gap-2 text-zinc-300 transition-colors">
-            <div class="w-4 h-4 rounded bg-blue-500/10 flex items-center justify-center text-blue-400">
+            class="h-8 px-3 rounded-lg hover:bg-zinc-800 active:scale-95 text-sm font-medium flex items-center gap-2 text-zinc-300 transition-all">
+            <div
+              class="w-5 h-5 rounded-md bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white shadow-lg shadow-blue-500/20">
               <Plus class="w-3 h-3" />
             </div>
-            <span>Add Files</span>
+            <span class="hidden sm:inline">Add Files</span>
+            <span class="sm:hidden">Files</span>
           </button>
           <button @click="selectFolder"
-            class="h-8 px-3 rounded-lg hover:bg-zinc-800 text-sm font-medium flex items-center gap-2 text-zinc-300 transition-colors">
-            <div class="w-4 h-4 rounded bg-amber-500/10 flex items-center justify-center text-amber-400">
+            class="h-8 px-3 rounded-lg hover:bg-zinc-800 active:scale-95 text-sm font-medium flex items-center gap-2 text-zinc-300 transition-all">
+            <div
+              class="w-5 h-5 rounded-md bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center text-white shadow-lg shadow-amber-500/20">
               <Folder class="w-3 h-3" />
             </div>
-            <span>Add Folder</span>
+            <span class="hidden sm:inline">Add Folder</span>
+            <span class="sm:hidden">Folder</span>
           </button>
         </div>
 
-        <div class="w-px h-6 bg-zinc-800 mx-2"></div>
+        <div class="w-px h-6 bg-zinc-800 mx-2 shrink-0 hidden sm:block"></div>
 
-        <div class="ml-auto flex items-center gap-1 bg-zinc-900 p-0.5 rounded-lg border border-zinc-800">
+        <div class="ml-auto flex items-center gap-1 bg-zinc-900 p-0.5 rounded-lg border border-zinc-800 shrink-0">
           <button @click="viewMode = 'grid'" class="p-1.5 rounded-md transition-all"
             :class="viewMode === 'grid' ? 'bg-zinc-700 text-white shadow-sm' : 'text-zinc-500 hover:text-zinc-300'">
             <LayoutGrid class="w-4 h-4" />
@@ -317,7 +353,7 @@ async function openUrl(url: string) {
         <div v-else>
           <!-- Grid View -->
           <div v-if="viewMode === 'grid'"
-            class="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-4">
+            class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8 gap-3 sm:gap-4">
             <div v-for="item in filteredItems" :key="item"
               class="group relative flex flex-col items-center text-center p-4 rounded-xl transition-all duration-200 cursor-pointer border border-transparent"
               :class="selectedItems.includes(sharedItems.indexOf(item)) ? 'bg-blue-500/10 border-blue-500/30' : 'hover:bg-zinc-900 border-transparent hover:border-zinc-800'"
@@ -427,5 +463,47 @@ async function openUrl(url: string) {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #3f3f46;
+}
+
+/* Hide scrollbar but keep functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Animations */
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-in {
+  animation: fade-in 0.2s ease-out;
+}
+
+/* Touch feedback */
+@media (hover: none) {
+  button:active {
+    transform: scale(0.97);
+  }
 }
 </style>

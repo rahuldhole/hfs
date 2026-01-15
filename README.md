@@ -21,7 +21,7 @@
 | 🚀 **One-Click Sharing** | Select files or folders and start sharing instantly |
 | 🌍 **LAN Access** | Anyone on your network can download via browser |
 | 📦 **Zip Downloads** | Download entire folders or multiple files as ZIP |
-| 🎨 **Modern UI** | Beautiful dark-themed server dashboard + light client |
+| 🎨 **Modern UI** | Beautiful, professional dark-themed interface for both server and client |
 | 🔒 **Private & Secure** | No internet required, files never leave your network |
 | ⚡ **Lightweight** | Built with Rust + Tauri for blazing fast performance |
 
@@ -37,7 +37,7 @@
 ![Server Dashboard](assets/server-dashboard.png)
 
 ### Client Interface  
-*Recipients browse and download files through a clean web UI*
+*Recipients browse and download files through a clean, dark-themed web UI*
 
 ![Client Interface](assets/client-interface.png)
 
