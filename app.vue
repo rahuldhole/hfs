@@ -178,7 +178,7 @@ function closeSidebar() {
           <Network class="w-5 h-5 text-white" />
         </div>
         <span class="font-bold text-lg tracking-tight text-white">HFS</span>
-        <span class="text-xs font-mono text-zinc-500 ml-auto">v0.1</span>
+        <span class="text-xs font-mono text-zinc-500 ml-auto">v0.0.1</span>
       </div>
 
       <!-- Server Control -->
@@ -275,7 +275,7 @@ function closeSidebar() {
           <span class="font-medium text-zinc-200 hidden sm:inline">Shared Content</span>
           <span class="font-medium text-zinc-200 sm:hidden">Shared</span>
           <span class="px-2 py-0.5 rounded-full bg-zinc-800 text-xs text-zinc-500 font-medium">{{ sharedItems.length
-            }}</span>
+          }}</span>
         </div>
 
         <!-- Search & Actions -->
