@@ -28,13 +28,15 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build frontend
+        # Ensure this command outputs to the directory expected by tauri.conf.json
         run: pnpm generate
 
       - name: Upload frontend build
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
-          path: .output/public
+          path: .output/public # Make sure this matches your build output dir
+          retention-days: 1
 
   release:
     needs: build-frontend
@@ -71,17 +73,24 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y \
-            libwebkit2gtk-4.1-dev \
-            libappindicator3-dev \
-            librsvg2-dev \
-            patchelf
+            build-essential \
+            curl \
+            wget \
+            file \
+            libssl-dev \
+            libgtk-3-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev
+          # Note: On Ubuntu 22.04, libayatana-appindicator3-dev is often preferred over libappindicator3-dev
 
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
 
-      - name: Disable Tauri frontend build
+      # Prevents Tauri from trying to run 'pnpm build' again, 
+      # since we already downloaded the artifacts.
+      - name: Disable Tauri frontend build hook
         shell: bash
         run: |
           if [[ "$RUNNER_OS" == "macOS" ]]; then
@@ -97,13 +106,25 @@ jobs:
         with:
           tagName: ${{ github.ref_name }}
           releaseName: "HFS ${{ github.ref_name }}"
+          # A cleaner, more professional body structure
           releaseBody: |
-            See the [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md)
+            ## 🚀 What's New in ${{ github.ref_name }}
+            
+            Please refer to the [**CHANGELOG**](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for a detailed list of changes and improvements.
 
-            ## Downloads
-            - macOS (Apple Silicon)
-            - macOS (Intel)
-            - Windows
-            - Linux
+            ---
+
+            ### 📦 Installation
+            
+            Find the installer for your operating system in the **Assets** section below:
+            
+            | Platform | File Type |
+            |----------|-----------|
+            | **Windows** | `.msi` or `.exe` |
+            | **macOS** | `.dmg` or `.app.tar.gz` |
+            | **Linux** | `.deb`, `.AppImage` |
+
+            > *Note: If you are on macOS, remember to allow the application to run via System Settings > Privacy & Security if it is not notarized.*
+
           prerelease: false
           args: --target ${{ matrix.target }}
