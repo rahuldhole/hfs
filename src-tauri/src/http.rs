@@ -357,155 +357,230 @@ async fn zip_selection_handler(
 }
 
 async fn root_handler() -> Html<&'static str> {
-    Html(r#"
+    Html(r##"
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>HFS Client</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Cdefs%3E%3ClinearGradient id='bg' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' style='stop-color:%233B82F6'/%3E%3Cstop offset='100%25' style='stop-color:%234F46E5'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='512' height='512' rx='96' fill='url(%23bg)'/%3E%3Cg fill='none' stroke='white' stroke-width='24' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='256' cy='172' r='40' fill='white'/%3E%3Ccircle cx='160' cy='340' r='40' fill='white'/%3E%3Ccircle cx='352' cy='340' r='40' fill='white'/%3E%3Cline x1='256' y1='212' x2='180' y2='305'/%3E%3Cline x1='256' y1='212' x2='332' y2='305'/%3E%3Cline x1='200' y1='340' x2='312' y2='340'/%3E%3C/g%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <style>
+        [v-cloak] { display: none !important; }
+        .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #27272a; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3f3f46; }
+    </style>
 </head>
-<body class="bg-slate-50 text-slate-900 font-sans h-screen flex flex-col">
-    <div id="app" class="h-full flex flex-col">
+<body class="bg-zinc-950 text-zinc-200 font-sans min-h-screen flex flex-col">
+    <div id="app" v-cloak class="min-h-screen flex flex-col">
         <!-- Header -->
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-20">
+        <header class="bg-zinc-900/80 backdrop-blur-xl border-b border-zinc-800 sticky top-0 z-20">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <div class="bg-blue-600 rounded-lg p-1.5">
-                       <i data-lucide="network" class="w-6 h-6 text-white"></i>
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <div class="relative">
+                        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
+                           <i data-lucide="network" class="w-5 h-5 text-white"></i>
+                        </div>
+                        <span class="absolute -bottom-0.5 -right-0.5 w-3 h-3 bg-emerald-500 border-2 border-zinc-900 rounded-full"></span>
                     </div>
-                    <h1 class="text-xl font-bold bg-gradient-to-r from-slate-900 to-slate-600 bg-clip-text text-transparent">HFS Client</h1>
+                    <div>
+                        <h1 class="text-lg sm:text-xl font-bold text-white">HFS Client</h1>
+                        <p class="text-[10px] text-zinc-500 hidden sm:block">Secure Local File Transfer</p>
+                    </div>
                 </div>
                 
-                <div class="flex items-center gap-3">
-                     <span class="text-xs font-mono bg-slate-100 px-2 py-1 rounded text-slate-500">Connected</span>
+                <div class="flex items-center gap-2 sm:gap-3">
+                     <span class="text-[10px] sm:text-xs font-medium bg-emerald-500/10 text-emerald-400 px-2 sm:px-3 py-1 rounded-full border border-emerald-500/30 flex items-center gap-1.5">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="hidden sm:inline">Connected</span>
+                     </span>
                 </div>
             </div>
         </header>
 
         <!-- Main Area -->
-        <main class="flex-1 overflow-hidden flex flex-col max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-6">
+        <main class="flex-1 flex flex-col max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-4 sm:py-6">
             
-            <!-- Toolbar -->
-            <div class="bg-white rounded-t-xl border border-slate-200 p-2 flex flex-wrap items-center gap-2 justify-between">
+            <!-- Toolbar Card -->
+            <div class="bg-zinc-900/50 rounded-t-2xl border border-zinc-800 p-2 sm:p-3 flex flex-wrap items-center gap-2 justify-between backdrop-blur-sm">
                <!-- Breadcrumbs -->
-               <div class="flex items-center gap-1 text-sm overflow-x-auto px-2 scrollbar-hide">
-                  <button @click="navigate('/')" class="p-1.5 hover:bg-slate-100 rounded text-slate-500 hover:text-blue-600 transition-colors">
+               <div class="flex items-center gap-0.5 sm:gap-1 text-sm overflow-x-auto scrollbar-hide flex-1 min-w-0">
+                  <button @click="navigate('/')" class="p-1.5 sm:p-2 hover:bg-zinc-800 rounded-lg text-zinc-500 hover:text-blue-400 transition-all active:scale-95 shrink-0">
                       <i data-lucide="home" class="w-4 h-4"></i>
                   </button>
                   <template v-for="(part, index) in breadcrumbs" :key="index">
-                      <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300"></i>
-                      <button @click="navigate(part.path)" class="px-2 py-1 rounded hover:bg-slate-100 text-slate-700 font-medium hover:text-blue-600 transition-colors whitespace-nowrap">
+                      <i data-lucide="chevron-right" class="w-4 h-4 text-zinc-600 shrink-0"></i>
+                      <button @click="navigate(part.path)" class="px-2 sm:px-3 py-1 rounded-lg hover:bg-zinc-800 text-zinc-300 font-medium hover:text-blue-400 transition-all whitespace-nowrap truncate max-w-[120px] sm:max-w-none active:scale-95">
                           {{ part.name }}
                       </button>
                   </template>
                </div>
 
                <!-- View Actions -->
-               <div class="flex items-center gap-2 ml-auto">
-                   <div class="flex bg-slate-100 rounded-lg p-1 border border-slate-200">
-                        <button @click="viewMode = 'grid'" :class="{'bg-white shadow text-blue-600': viewMode === 'grid', 'text-slate-500 hover:text-slate-700': viewMode !== 'grid'}" class="p-1.5 rounded transition-all">
+               <div class="flex items-center gap-2 shrink-0">
+                   <div class="flex bg-zinc-800 rounded-xl p-1 border border-zinc-700">
+                        <button @click="viewMode = 'grid'" :class="{'bg-zinc-700 shadow-sm text-blue-400': viewMode === 'grid', 'text-zinc-500 hover:text-zinc-300': viewMode !== 'grid'}" class="p-2 rounded-lg transition-all active:scale-95">
                             <i data-lucide="layout-grid" class="w-4 h-4"></i>
                         </button>
-                        <button @click="viewMode = 'list'" :class="{'bg-white shadow text-blue-600': viewMode === 'list', 'text-slate-500 hover:text-slate-700': viewMode !== 'list'}" class="p-1.5 rounded transition-all">
+                        <button @click="viewMode = 'list'" :class="{'bg-zinc-700 shadow-sm text-blue-400': viewMode === 'list', 'text-zinc-500 hover:text-zinc-300': viewMode !== 'list'}" class="p-2 rounded-lg transition-all active:scale-95">
                             <i data-lucide="list" class="w-4 h-4"></i>
                         </button>
                    </div>
                </div>
             </div>
 
-            <!-- Toolbar Context Actions (Selection) -->
-            <div v-if="selectedItems.length > 0" class="bg-blue-50 border-x border-b border-blue-100 px-4 py-2 flex items-center justify-between animate-in slide-in-from-top-2">
-                 <div class="text-sm text-blue-800 font-medium flex items-center gap-2">
-                     <i data-lucide="check-square" class="w-4 h-4"></i>
-                     {{ selectedItems.length }} selected
+            <!-- Selection Toolbar -->
+            <div v-if="selectedItems.length > 0" class="bg-blue-500/10 border-x border-blue-500/20 px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+                 <div class="text-sm text-blue-400 font-medium flex items-center gap-2">
+                     <div class="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center">
+                        <i data-lucide="check" class="w-3.5 h-3.5 text-blue-400"></i>
+                     </div>
+                     {{ selectedItems.length }} item{{ selectedItems.length > 1 ? 's' : '' }} selected
                  </div>
-                 <button @click="downloadSelection" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors shadow-sm">
-                     <i data-lucide="download" class="w-4 h-4"></i>
-                     Download as Zip
-                 </button>
+                 <div class="flex gap-2">
+                     <button @click="clearSelection" class="px-3 py-1.5 rounded-lg text-sm font-medium text-zinc-400 hover:bg-zinc-800 transition-colors active:scale-95">
+                         Clear
+                     </button>
+                     <button @click="downloadSelection" class="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white px-4 py-1.5 rounded-lg text-sm font-semibold flex items-center gap-2 transition-all shadow-lg shadow-blue-500/25 active:scale-95">
+                         <i data-lucide="download" class="w-4 h-4"></i>
+                         <span class="hidden sm:inline">Download as Zip</span>
+                         <span class="sm:hidden">Download</span>
+                     </button>
+                 </div>
             </div>
-            <div v-else class="h-[1px] bg-slate-200"></div>
+            <div v-else class="h-px bg-zinc-800"></div>
 
-            <!-- Content -->
-            <div class="flex-1 bg-white border-x border-b border-slate-200 rounded-b-xl overflow-y-auto p-4" @click.self="clearSelection">
-                
-                <!-- Loading -->
-                <div v-if="loading" class="h-full flex items-center justify-center">
-                    <i data-lucide="loader-2" class="w-8 h-8 text-blue-500 animate-spin"></i>
-                </div>
-
-                <!-- Empty -->
-                <div v-else-if="items.length === 0" class="h-full flex flex-col items-center justify-center text-slate-400">
-                    <i data-lucide="folder-open" class="w-16 h-16 mb-4 opacity-50"></i>
-                    <p>Folder is empty</p>
-                </div>
-
-                <!-- Grid View -->
-                <div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4">
-                    <div v-for="item in items" :key="item.path" 
-                         @click.exact="toggleSelect(item)"
-                         @dblclick="handleOpen(item)"
-                         :class="{'ring-2 ring-blue-500 bg-blue-50': isSelected(item), 'hover:bg-slate-50': !isSelected(item)}"
-                         class="group relative p-4 rounded-xl border border-slate-100 cursor-pointer transition-all flex flex-col items-center text-center select-none">
-                        
-                        <!-- Checkbox Overlay -->
-                        <div class="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity" :class="{'opacity-100': isSelected(item)}">
-                            <input type="checkbox" :checked="isSelected(item)" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 pointer-events-none">
-                        </div>
-
-                        <!-- Icon -->
-                        <div class="mb-3 text-slate-400 group-hover:scale-110 transition-transform duration-200">
-                            <i v-if="item.is_dir" data-lucide="folder" class="w-16 h-16 fill-amber-100 text-amber-400"></i>
-                            <i v-else data-lucide="file" class="w-12 h-12"></i>
-                        </div>
-                        
-                        <div class="text-sm font-medium text-slate-700 truncate w-full" :title="item.name">{{ item.name }}</div>
-                        <div class="text-xs text-slate-400 mt-1">{{ formatSize(item.size) }}</div>
+            <!-- Content Area -->
+            <div class="flex-1 bg-zinc-900/30 border-x border-b border-zinc-800 rounded-b-2xl overflow-hidden flex flex-col backdrop-blur-sm">
+                <div class="flex-1 overflow-y-auto p-4 sm:p-6" @click.self="clearSelection">
+                    
+                    <!-- Loading -->
+                    <div v-if="loading" class="h-64 flex flex-col items-center justify-center">
+                        <div class="w-12 h-12 rounded-full border-4 border-zinc-700 border-t-blue-500 animate-spin mb-4"></div>
+                        <p class="text-zinc-500 text-sm">Loading files...</p>
                     </div>
-                </div>
 
-                <!-- List View -->
-                <div v-else class="flex flex-col">
-                    <div class="grid grid-cols-12 gap-4 px-4 py-2 text-xs font-semibold text-slate-500 border-b border-slate-100 uppercase tracking-wider">
-                        <div class="col-span-1 w-6"></div>
-                        <div class="col-span-7">Name</div>
-                        <div class="col-span-2 text-right">Size</div>
-                        <div class="col-span-2 text-right">Action</div>
+                    <!-- Empty -->
+                    <div v-else-if="items.length === 0" class="h-64 flex flex-col items-center justify-center text-zinc-500">
+                        <div class="w-20 h-20 rounded-full bg-zinc-800 flex items-center justify-center mb-4">
+                            <i data-lucide="folder-open" class="w-10 h-10 text-zinc-600"></i>
+                        </div>
+                        <p class="font-medium text-zinc-400">This folder is empty</p>
+                        <p class="text-sm mt-1">No files or folders to display</p>
                     </div>
-                    <div v-for="item in items" :key="item.path"
-                         @click.exact="toggleSelect(item)"
-                         @dblclick="handleOpen(item)"
-                         :class="{'bg-blue-50': isSelected(item), 'hover:bg-slate-50': !isSelected(item)}"
-                         class="grid grid-cols-12 gap-4 items-center px-4 py-3 border-b border-slate-50 cursor-pointer transition-colors text-sm text-slate-700">
-                        
-                        <div class="col-span-1">
-                             <input type="checkbox" :checked="isSelected(item)" class="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500 pointer-events-none">
-                        </div>
-                        <div class="col-span-7 flex items-center gap-3">
-                            <i v-if="item.is_dir" data-lucide="folder" class="w-5 h-5 fill-amber-100 text-amber-400"></i>
-                            <i v-else data-lucide="file" class="w-5 h-5 text-slate-400"></i>
-                            <span class="truncate font-medium">{{ item.name }}</span>
-                        </div>
-                        <div class="col-span-2 text-right font-mono text-xs text-slate-500">
-                            {{ formatSize(item.size) }}
-                        </div>
-                        <div class="col-span-2 flex justify-end">
-                            <button @click.stop="downloadItem(item)" class="p-1.5 hover:bg-blue-100 hover:text-blue-600 rounded text-slate-400 transition-colors" title="Download">
+
+                    <!-- Grid View -->
+                    <div v-else-if="viewMode === 'grid'" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3 sm:gap-4">
+                        <div v-for="item in items" :key="item.path" 
+                             @click.exact="toggleSelect(item)"
+                             @dblclick="handleOpen(item)"
+                             :class="{'ring-2 ring-blue-500 bg-blue-500/10': isSelected(item), 'hover:bg-zinc-800/50': !isSelected(item)}"
+                             class="group relative p-3 sm:p-4 rounded-xl border border-zinc-800 cursor-pointer transition-all duration-200 flex flex-col items-center text-center select-none hover:border-zinc-700">
+                            
+                            <!-- Checkbox -->
+                            <div class="absolute top-2 left-2 z-10 transition-all" :class="{'opacity-100 scale-100': isSelected(item), 'opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100': !isSelected(item)}">
+                                <div :class="isSelected(item) ? 'bg-blue-600 border-blue-600' : 'bg-zinc-800 border-zinc-600'" class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors">
+                                    <i v-if="isSelected(item)" data-lucide="check" class="w-3 h-3 text-white"></i>
+                                </div>
+                            </div>
+
+                            <!-- Download Quick Action -->
+                            <button @click.stop="downloadItem(item)" class="absolute top-2 right-2 w-8 h-8 bg-zinc-800/90 backdrop-blur rounded-lg border border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-blue-400 hover:border-blue-500/50 opacity-0 group-hover:opacity-100 transition-all z-10 active:scale-95">
                                 <i data-lucide="download" class="w-4 h-4"></i>
                             </button>
+
+                            <!-- Icon -->
+                            <div class="mb-3 transition-transform duration-200 group-hover:scale-105">
+                                <div v-if="item.is_dir" class="w-14 h-14 sm:w-16 sm:h-16 flex items-center justify-center">
+                                    <i data-lucide="folder" class="w-14 h-14 sm:w-16 sm:h-16 text-amber-400 fill-amber-400/20"></i>
+                                </div>
+                                <div v-else class="w-12 h-14 sm:w-14 sm:h-16 relative flex items-center justify-center">
+                                    <i data-lucide="file" class="w-12 h-14 sm:w-14 sm:h-16 text-zinc-500"></i>
+                                    <span class="absolute bottom-3 text-[8px] sm:text-[9px] font-bold text-zinc-400 uppercase">{{ getExt(item.name) }}</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Name & Size -->
+                            <div class="text-xs sm:text-sm font-medium text-zinc-300 truncate w-full px-1" :title="item.name">{{ item.name }}</div>
+                            <div class="text-[10px] sm:text-xs text-zinc-500 mt-1">{{ formatSize(item.size) }}</div>
+                        </div>
+                    </div>
+
+                    <!-- List View -->
+                    <div v-else class="flex flex-col -mx-2 sm:mx-0">
+                        <!-- Header -->
+                        <div class="hidden sm:grid grid-cols-12 gap-4 px-4 py-2 text-xs font-semibold text-zinc-500 border-b border-zinc-800 uppercase tracking-wider sticky top-0 bg-zinc-900/90 backdrop-blur z-10">
+                            <div class="col-span-1"></div>
+                            <div class="col-span-6">Name</div>
+                            <div class="col-span-2 text-right">Size</div>
+                            <div class="col-span-3 text-right">Actions</div>
+                        </div>
+                        
+                        <!-- Items -->
+                        <div v-for="item in items" :key="item.path"
+                             @click.exact="toggleSelect(item)"
+                             @dblclick="handleOpen(item)"
+                             :class="{'bg-blue-500/10': isSelected(item), 'hover:bg-zinc-800/50': !isSelected(item)}"
+                             class="grid grid-cols-12 gap-2 sm:gap-4 items-center px-2 sm:px-4 py-3 sm:py-4 border-b border-zinc-800/50 cursor-pointer transition-colors text-sm">
+                            
+                            <!-- Checkbox -->
+                            <div class="col-span-1 flex justify-center">
+                                <div :class="isSelected(item) ? 'bg-blue-600 border-blue-600' : 'bg-zinc-800 border-zinc-600 hover:border-zinc-500'" class="w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors">
+                                    <i v-if="isSelected(item)" data-lucide="check" class="w-3 h-3 text-white"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Name -->
+                            <div class="col-span-7 sm:col-span-6 flex items-center gap-2 sm:gap-3 min-w-0">
+                                <div v-if="item.is_dir" class="w-8 h-8 sm:w-10 sm:h-10 shrink-0 flex items-center justify-center">
+                                    <i data-lucide="folder" class="w-8 h-8 sm:w-10 sm:h-10 text-amber-400 fill-amber-400/20"></i>
+                                </div>
+                                <div v-else class="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0">
+                                    <i data-lucide="file" class="w-4 h-4 sm:w-5 sm:h-5 text-zinc-500"></i>
+                                </div>
+                                <span class="truncate font-medium text-zinc-300">{{ item.name }}</span>
+                            </div>
+                            
+                            <!-- Size -->
+                            <div class="col-span-2 text-right font-mono text-xs text-zinc-500 hidden sm:block">
+                                {{ formatSize(item.size) }}
+                            </div>
+                            
+                            <!-- Actions -->
+                            <div class="col-span-4 sm:col-span-3 flex justify-end gap-1">
+                                <button @click.stop="downloadItem(item)" class="px-2 sm:px-3 py-1.5 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors active:scale-95 border border-blue-500/20">
+                                    <i data-lucide="download" class="w-3.5 h-3.5"></i>
+                                    <span class="hidden sm:inline">{{ item.is_dir ? 'Zip' : 'Download' }}</span>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
-
             </div>
         </main>
         
-        <footer class="bg-white border-t border-slate-200 py-4 text-center text-xs text-slate-400">
-             Powered by HFS
+        <!-- Footer -->
+        <footer class="bg-zinc-900/50 border-t border-zinc-800 py-4 text-center">
+             <p class="text-xs text-zinc-500">Powered by <span class="font-semibold text-zinc-400">HFS</span> • Secure Local File Transfer</p>
         </footer>
     </div>
 
@@ -535,12 +610,12 @@ async fn root_handler() -> Html<&'static str> {
                         const res = await fetch(`/api/browse?path=${encodeURIComponent(path)}`)
                         items.value = await res.json()
                         currentPath.value = path
-                        selectedItems.value = [] // Clear selection on nav
+                        selectedItems.value = []
                     } catch (e) {
                         console.error(e)
                     } finally {
                         loading.value = false
-                        setTimeout(() => lucide.createIcons(), 100)
+                        setTimeout(() => lucide.createIcons(), 50)
                     }
                 }
 
@@ -611,6 +686,12 @@ async fn root_handler() -> Html<&'static str> {
                     return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i]
                 }
 
+                function getExt(name) {
+                    const parts = name.split('.')
+                    if (parts.length > 1) return parts.pop().slice(0, 4)
+                    return 'FILE'
+                }
+
                 onMounted(() => {
                     fetchItems('/')
                     lucide.createIcons()
@@ -618,7 +699,7 @@ async fn root_handler() -> Html<&'static str> {
 
                 return {
                     items, currentPath, loading, viewMode, selectedItems,
-                    breadcrumbs,
+                    breadcrumbs, getExt,
                     navigate, handleOpen, downloadItem, toggleSelect, isSelected,
                     clearSelection, downloadSelection, formatSize
                 }
@@ -627,5 +708,5 @@ async fn root_handler() -> Html<&'static str> {
     </script>
 </body>
 </html>
-    "#)
+    "##)
 }
