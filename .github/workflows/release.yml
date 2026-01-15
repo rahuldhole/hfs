@@ -48,12 +48,16 @@ jobs:
         include:
           - os: macos-14
             target: aarch64-apple-darwin
+            bundle_type: dmg
           - os: macos-14
             target: x86_64-apple-darwin
+            bundle_type: dmg
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
+            bundle_type: appimage
           - os: windows-latest
             target: x86_64-pc-windows-msvc
+            bundle_type: msi
 
     runs-on: ${{ matrix.os }}
 
@@ -130,11 +134,36 @@ jobs:
           find target -name "*.app" -exec xattr -cr {} \; 2>/dev/null || true
           find target -name "*.dmg" -exec xattr -cr {} \; 2>/dev/null || true
 
-      - name: Upload artifacts
+      - name: Collect distribution files
+        shell: bash
+        run: |
+          # Create a directory for distribution files
+          mkdir -p dist
+          cd src-tauri
+          
+          # Find and copy only the final distribution files
+          if [ "${{ runner.os }}" == "macOS" ]; then
+            # For macOS, copy .dmg files
+            find target -name "*.dmg" -type f -exec cp {} ../dist/ \;
+          elif [ "${{ runner.os }}" == "Linux" ]; then
+            # For Linux, copy .AppImage and .deb files
+            find target -name "*.AppImage" -type f -exec cp {} ../dist/ \;
+            find target -name "*.deb" -type f -exec cp {} ../dist/ \;
+          elif [ "${{ runner.os }}" == "Windows" ]; then
+            # For Windows, copy .msi and .exe files
+            find target -name "*.msi" -type f -exec cp {} ../dist/ \;
+            find target -name "*setup.exe" -type f -exec cp {} ../dist/ \;
+          fi
+          
+          # List what we collected
+          echo "Collected files:"
+          ls -la ../dist/
+
+      - name: Upload distribution files
         uses: actions/upload-artifact@v4
         with:
           name: ${{ runner.os }}-${{ matrix.target }}
-          path: src-tauri/target/${{ matrix.target }}/release/bundle/
+          path: dist/
           retention-days: 1
 
   create-release:
@@ -149,12 +178,23 @@ jobs:
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
-          path: artifacts/
+          path: dist/
           pattern: '*'
           merge-multiple: true
 
-      - name: List artifacts
-        run: find artifacts/ -type f -name "*" | sort
+      - name: List distribution files
+        run: |
+          echo "Distribution files to upload:"
+          find dist/ -type f -name "*" | sort
+          
+          # Move all files to root of dist directory (remove subdirectories)
+          find dist/ -type f -exec mv {} dist/ \;
+          
+          # Remove empty directories
+          find dist/ -type d -empty -delete
+          
+          echo "Final files:"
+          ls -la dist/
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -198,7 +238,12 @@ jobs:
             pnpm install
             pnpm tauri dev
             ```
-          files: artifacts/**/*
+          files: |
+            dist/*.dmg
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.msi
+            dist/*.exe
           draft: false
           prerelease: false
           generate_release_notes: false
