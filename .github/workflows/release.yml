@@ -48,20 +48,12 @@ jobs:
         include:
           - os: macos-14
             target: aarch64-apple-darwin
-            artifact_suffix: macos-arm64
-            bundle_type: dmg
           - os: macos-14
             target: x86_64-apple-darwin
-            artifact_suffix: macos-x64
-            bundle_type: dmg
           - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-            artifact_suffix: linux-x64
-            bundle_type: appimage
           - os: windows-latest
             target: x86_64-pc-windows-msvc
-            artifact_suffix: windows-x64
-            bundle_type: msi
 
     runs-on: ${{ matrix.os }}
 
@@ -126,122 +118,23 @@ jobs:
           cargo fix --lib -p app --allow-dirty --allow-staged
 
       - name: Build Tauri app
-        env:
-          # Set clear bundle names
-          TAURI_BUNDLE_NAME: "hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}"
         run: |
           cd src-tauri
           pnpm tauri build --target ${{ matrix.target }}
 
-      - name: Process macOS artifacts
+      - name: Remove macOS quarantine attribute
         if: runner.os == 'macOS'
-        shell: bash
         run: |
           cd src-tauri
-          
-          # Find and process DMG file
-          DMG_FILE=$(find target/${{ matrix.target }}/release/bundle -name "*.dmg" -type f | head -1)
-          if [ -f "$DMG_FILE" ]; then
-            # Remove quarantine attribute
-            xattr -cr "$DMG_FILE"
-            
-            # Get the filename
-            FILENAME=$(basename "$DMG_FILE")
-            EXTENSION="${FILENAME##*.}"
-            
-            # Create new name
-            NEW_NAME="hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.$EXTENSION"
-            
-            # Copy to workspace root
-            cp "$DMG_FILE" "../$NEW_NAME"
-            echo "NEW_ARTIFACT=$NEW_NAME" >> $GITHUB_ENV
-            echo "ARTIFACT_PATH=$(pwd)/../$NEW_NAME" >> $GITHUB_ENV
-            
-            echo "Processed: $FILENAME -> $NEW_NAME"
-          else
-            echo "No DMG file found!"
-            find target -name "*.dmg" -type f
-            exit 1
-          fi
+          # Find and remove quarantine from both .app and .dmg files
+          find target -name "*.app" -exec xattr -cr {} \; 2>/dev/null || true
+          find target -name "*.dmg" -exec xattr -cr {} \; 2>/dev/null || true
 
-      - name: Process Linux artifacts
-        if: runner.os == 'Linux'
-        shell: bash
-        run: |
-          cd src-tauri
-          
-          # Try to find AppImage first, then deb
-          if [ "${{ matrix.bundle_type }}" = "appimage" ]; then
-            ARTIFACT_FILE=$(find target/${{ matrix.target }}/release/bundle -name "*.AppImage" -type f | head -1)
-            if [ ! -f "$ARTIFACT_FILE" ]; then
-              ARTIFACT_FILE=$(find target/${{ matrix.target }}/release/bundle -name "*.deb" -type f | head -1)
-            fi
-          else
-            ARTIFACT_FILE=$(find target/${{ matrix.target }}/release/bundle -name "*.deb" -type f | head -1)
-          fi
-          
-          if [ -f "$ARTIFACT_FILE" ]; then
-            # Get the filename
-            FILENAME=$(basename "$ARTIFACT_FILE")
-            EXTENSION="${FILENAME##*.}"
-            
-            # Create new name
-            NEW_NAME="hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.$EXTENSION"
-            
-            # Copy to workspace root
-            cp "$ARTIFACT_FILE" "../$NEW_NAME"
-            echo "NEW_ARTIFACT=$NEW_NAME" >> $GITHUB_ENV
-            echo "ARTIFACT_PATH=$(pwd)/../$NEW_NAME" >> $GITHUB_ENV
-            
-            echo "Processed: $FILENAME -> $NEW_NAME"
-          else
-            echo "No artifact file found!"
-            find target -name "*.AppImage" -o -name "*.deb" -type f
-            exit 1
-          fi
-
-      - name: Process Windows artifacts
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          cd src-tauri
-          
-          # Try to find MSI first, then exe
-          if ($env:bundle_type -eq "msi") {
-            $artifactFile = Get-ChildItem -Path "target\${{ matrix.target }}\release\bundle" -Recurse -Filter "*.msi" -ErrorAction SilentlyContinue | Select-Object -First 1
-            if (-not $artifactFile) {
-              $artifactFile = Get-ChildItem -Path "target\${{ matrix.target }}\release\bundle" -Recurse -Filter "*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
-            }
-          } else {
-            $artifactFile = Get-ChildItem -Path "target\${{ matrix.target }}\release\bundle" -Recurse -Filter "*.exe" -ErrorAction SilentlyContinue | Select-Object -First 1
-          }
-          
-          if ($artifactFile) {
-            # Get the filename
-            $filename = $artifactFile.Name
-            $extension = $artifactFile.Extension
-            
-            # Create new name
-            $newName = "hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}$extension"
-            
-            # Copy to workspace root
-            Copy-Item $artifactFile.FullName "..\$newName"
-            Write-Output "NEW_ARTIFACT=$newName" | Out-File -FilePath $env:GITHUB_ENV -Append
-            Write-Output "ARTIFACT_PATH=$pwd\..\$newName" | Out-File -FilePath $env:GITHUB_ENV -Append
-            
-            Write-Host "Processed: $filename -> $newName"
-          } else {
-            Write-Host "No artifact file found!"
-            Get-ChildItem -Path target -Recurse -Filter "*.msi" -ErrorAction SilentlyContinue
-            Get-ChildItem -Path target -Recurse -Filter "*.exe" -ErrorAction SilentlyContinue
-            exit 1
-          }
-
-      - name: Upload artifact
+      - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}
-          path: ${{ env.NEW_ARTIFACT }}
+          name: ${{ runner.os }}-${{ matrix.target }}
+          path: src-tauri/target/${{ matrix.target }}/release/bundle/
           retention-days: 1
 
   create-release:
@@ -257,11 +150,11 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts/
-          pattern: hfs-*
+          pattern: '*'
           merge-multiple: true
 
-      - name: List downloaded artifacts
-        run: ls -la artifacts/
+      - name: List artifacts
+        run: find artifacts/ -type f -name "*" | sort
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
@@ -283,10 +176,10 @@ jobs:
             
             | Platform | Architecture | File Type |
             |----------|--------------|-----------|
-            | **Windows** | x64 (64-bit) | `.msi` |
+            | **Windows** | x64 (64-bit) | `.msi` (Installer), `.exe` (Portable) |
             | **macOS (Intel)** | x64 (64-bit) | `.dmg` |
             | **macOS (Apple Silicon)** | ARM64 | `.dmg` |
-            | **Linux** | x64 (64-bit) | `.AppImage` |
+            | **Linux** | x64 (64-bit) | `.deb` (Ubuntu/Debian), `.AppImage` (Portable) |
             
             ---
             
@@ -305,7 +198,7 @@ jobs:
             pnpm install
             pnpm tauri dev
             ```
-          files: artifacts/*
+          files: artifacts/**/*
           draft: false
           prerelease: false
           generate_release_notes: false
