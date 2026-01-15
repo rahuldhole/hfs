@@ -123,52 +123,134 @@ jobs:
         run: |
           pnpm tauri build --target ${{ matrix.target }}
 
-      - name: Remove macOS quarantine attribute
+      - name: Find and rename macOS artifacts
         if: runner.os == 'macOS'
+        shell: bash
         run: |
-          # This removes the "app is damaged" warning on macOS
-          find target/release/bundle -name "*.app" -exec xattr -cr {} \;
-          find target/release/bundle -name "*.dmg" -exec xattr -cr {} \;
-
-      - name: Rename and upload artifacts
-        run: |
-          cd target/release/bundle
+          # Find the actual output directory
+          if [ -d "target/${{ matrix.target }}/release/bundle" ]; then
+            BUNDLE_DIR="target/${{ matrix.target }}/release/bundle"
+          elif [ -d "target/release/bundle" ]; then
+            BUNDLE_DIR="target/release/bundle"
+          else
+            echo "Could not find bundle directory"
+            find . -name "*.dmg" -o -name "*.app" | head -20
+            exit 1
+          fi
           
-          # Rename files for clarity
+          cd "$BUNDLE_DIR"
+          
+          # Remove macOS quarantine attribute
+          find . -name "*.app" -exec xattr -cr {} \; 2>/dev/null || true
+          find . -name "*.dmg" -exec xattr -cr {} \; 2>/dev/null || true
+          
+          # Rename files
           for file in *; do
             if [[ "$file" == *.dmg ]]; then
               new_name="hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.dmg"
               mv "$file" "$new_name"
-              echo "ASSET_PATH=$(pwd)/$new_name" >> $GITHUB_ENV
-              
-            elif [[ "$file" == *.msi ]]; then
-              new_name="hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.msi"
-              mv "$file" "$new_name"
-              echo "ASSET_PATH=$(pwd)/$new_name" >> $GITHUB_ENV
-              
-            elif [[ "$file" == *.AppImage ]]; then
+              echo "Renamed: $file -> $new_name"
+            fi
+          done
+          
+          echo "## Artifacts in $BUNDLE_DIR:" >> $GITHUB_STEP_SUMMARY
+          ls -la >> $GITHUB_STEP_SUMMARY
+
+      - name: Find and rename Linux artifacts
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          # Find the actual output directory
+          if [ -d "target/${{ matrix.target }}/release/bundle" ]; then
+            BUNDLE_DIR="target/${{ matrix.target }}/release/bundle"
+          elif [ -d "target/release/bundle" ]; then
+            BUNDLE_DIR="target/release/bundle"
+          else
+            echo "Could not find bundle directory"
+            find . -name "*.deb" -o -name "*.AppImage" | head -20
+            exit 1
+          fi
+          
+          cd "$BUNDLE_DIR"
+          
+          # Rename files
+          for file in *; do
+            if [[ "$file" == *.AppImage ]]; then
               new_name="hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.AppImage"
               mv "$file" "$new_name"
-              echo "ASSET_PATH=$(pwd)/$new_name" >> $GITHUB_ENV
-              
+              echo "Renamed: $file -> $new_name"
             elif [[ "$file" == *.deb ]]; then
               new_name="hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.deb"
               mv "$file" "$new_name"
-              echo "ASSET_PATH=$(pwd)/$new_name" >> $GITHUB_ENV
-              
-            elif [[ "$file" == *.exe ]]; then
-              new_name="hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.exe"
-              mv "$file" "$new_name"
-              echo "ASSET_PATH=$(pwd)/$new_name" >> $GITHUB_ENV
+              echo "Renamed: $file -> $new_name"
             fi
           done
+          
+          echo "## Artifacts in $BUNDLE_DIR:" >> $GITHUB_STEP_SUMMARY
+          ls -la >> $GITHUB_STEP_SUMMARY
 
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v1
+      - name: Find and rename Windows artifacts
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          # Find the actual output directory
+          $bundleDir = $null
+          if (Test-Path "target\${{ matrix.target }}\release\bundle") {
+            $bundleDir = "target\${{ matrix.target }}\release\bundle"
+          } elseif (Test-Path "target\release\bundle") {
+            $bundleDir = "target\release\bundle"
+          } else {
+            Write-Host "Could not find bundle directory"
+            Get-ChildItem -Recurse -Filter "*.msi" -ErrorAction SilentlyContinue | Select-Object -First 20
+            Get-ChildItem -Recurse -Filter "*.exe" -ErrorAction SilentlyContinue | Select-Object -First 20
+            exit 1
+          }
+          
+          Set-Location $bundleDir
+          
+          # Rename files
+          Get-ChildItem | ForEach-Object {
+            if ($_.Name -match "\.msi$") {
+              $newName = "hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.msi"
+              Rename-Item $_.FullName -NewName $newName
+              Write-Host "Renamed: $($_.Name) -> $newName"
+            } elseif ($_.Name -match "\.exe$") {
+              $newName = "hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.exe"
+              Rename-Item $_.FullName -NewName $newName
+              Write-Host "Renamed: $($_.Name) -> $newName"
+            }
+          }
+          
+          Write-Host "## Artifacts in $bundleDir:" >> $env:GITHUB_STEP_SUMMARY
+          Get-ChildItem | Format-List | Out-String >> $env:GITHUB_STEP_SUMMARY
+
+      - name: Upload artifacts to GitHub
+        uses: actions/upload-artifact@v4
         with:
-          tag_name: ${{ github.ref_name }}
-          name: "HFS ${{ github.ref_name }}"
-          body: |
+          name: hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}
+          path: |
+            target/${{ matrix.target }}/release/bundle/*
+            target/release/bundle/*
+          if-no-files-found: error
+          retention-days: 1
+
+  create-release:
+    needs: release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        run: |
+          mkdir -p artifacts
+          cd artifacts
+          # Download all artifacts from the matrix jobs
+          gh release create ${{ github.ref_name }} --repo ${{ github.repository }} \
+            --title "HFS ${{ github.ref_name }}" \
+            --notes-file <(cat <<EOF
             ## 🚀 What's New in ${{ github.ref_name }}
             
             Please refer to the [**CHANGELOG**](https://github.com/${{ github.repository }}/blob/main/CHANGELOG.md) for a detailed list of changes.
@@ -193,17 +275,23 @@ jobs:
             1. Right-click the `.dmg` file → "Open"
             2. Click "Open" in the security dialog
             3. Or run: `sudo xattr -cr /Applications/HFS.app`
-            
-            ---
-            
-            ### 🔧 Development
-            ```bash
-            git clone https://github.com/${{ github.repository }}.git
-            cd hfs
-            pnpm install
-            pnpm tauri dev
-            ```
-          files: |
-            target/release/bundle/hfs-${{ github.ref_name }}-${{ matrix.artifact_suffix }}.*
-          draft: false
-          prerelease: false
+            EOF
+            ) \
+            --draft=false \
+            --prerelease=false || echo "Release may already exist"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload release assets
+        run: |
+          # Find and upload all renamed artifacts
+          find . -name "hfs-${{ github.ref_name }}-*.dmg" \
+            -o -name "hfs-${{ github.ref_name }}-*.msi" \
+            -o -name "hfs-${{ github.ref_name }}-*.exe" \
+            -o -name "hfs-${{ github.ref_name }}-*.deb" \
+            -o -name "hfs-${{ github.ref_name }}-*.AppImage" | while read file; do
+            echo "Uploading $file"
+            gh release upload ${{ github.ref_name }} "$file" --repo ${{ github.repository }} || true
+          done
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
