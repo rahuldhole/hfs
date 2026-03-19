@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🌐 HFS – HTTP File Share
+# <img src="public/icon.svg" width="32" height="32" /> HFS – HTTP File Share
 ### *Share files instantly over your local network.* 
 ***No cloud. No accounts. No friction. Just drop and go.***
 
