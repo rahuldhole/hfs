@@ -12,29 +12,6 @@
 
 ---
 
-### *"The missing piece in my local workflow. Moving files between my workstation and test devices is finally instant."*
-
-</div>
-
-## 📥 Download
-
-HFS is available for all major platforms. Download the latest installer below:
-
-| OS | Package |
-|:---|:---|
-| **macOS (Silicon)** | [**HFS_aarch64.dmg**](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_aarch64.dmg) |
-| **macOS (Intel)** | [**HFS_x64.dmg**](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_x64.dmg) |
-| **Windows** | [**HFS_x64.msi**](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_x64.msi) |
-| **Linux (Debian)** | [**HFS_amd64.deb**](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_amd64.deb) |
-| **Linux (AppImage)** | [**HFS_amd64.AppImage**](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_amd64.AppImage) |
-
-> [!IMPORTANT]
-> **🍎 macOS Note**: Since HFS is open-source and not code-signed, macOS may show a security alert. To open:  
-> Right-click the app → **Open** → **Open** in dialog.  
-> *Or run:* `sudo xattr -cr /Applications/HFS.app`
-
----
-
 ## ✨ Why HFS?
 
 HFS turns your local machine into a temporary file server. Anyone on your local network can access and download your shared files via their web browser—no client-side app required.
@@ -63,6 +40,30 @@ HFS turns your local machine into a temporary file server. Anyone on your local 
 ![Client Interface](public/assets/client-interface.png)
 
 </div>
+
+---
+
+### *"The missing piece in my local workflow. Moving files between my workstation and test devices is finally instant."*
+
+</div>
+
+## 📥 Download
+
+HFS is available for all major platforms. Download the latest installer below:
+
+| OS | Package |
+|:---|:---|
+| **macOS (Silicon)** | [**HFS_aarch64.dmg**](https://github.com/rahuldhole/hfs/releases/download/v0.0.1/hfs_0.0.1_aarch64.dmg) |
+| **macOS (Intel)** | [**HFS_x64.dmg**](https://github.com/rahuldhole/hfs/releases/download/v0.0.1/hfs_0.0.1_x64.dmg) |
+| **Windows** | [**HFS_x64.exe**](https://github.com/rahuldhole/hfs/releases/download/v0.0.1/hfs_0.0.1_x64-setup.exe) |
+| **Windows** | [**HFS_x64.msi**](https://github.com/rahuldhole/hfs/releases/download/v0.0.1/hfs_0.0.1_x64_en-US.msi) |
+| **Linux (Debian)** | [**HFS_amd64.deb**](https://github.com/rahuldhole/hfs/releases/download/v0.0.1/hfs_0.0.1_amd64.deb) |
+| **Linux (AppImage)** | [**HFS_amd64.AppImage**](https://github.com/rahuldhole/hfs/releases/download/v0.0.1/hfs_0.0.1_amd64.AppImage) |
+
+> [!IMPORTANT]
+> **🍎 macOS Note**: Since HFS is open-source and not code-signed, macOS may show a security alert. To open:  
+> Right-click the app → **Open** → **Open** in dialog.  
+> *Or run:* `sudo xattr -cr /Applications/HFS.app`
 
 ---
 
