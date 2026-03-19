@@ -4,96 +4,110 @@
 
 **Share files instantly over your local network. No cloud. No accounts. Just drop and go.**
 
-[![Release](https://img.shields.io/github/v/release/rahuldholehfs?style=for-the-badge&logo=github)](https://github.com/rahuldholehfs/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/rahuldholehfs/total?style=for-the-badge&logo=github)](https://github.com/rahuldholehfs/releases)
-[![License](https://img.shields.io/github/license/rahuldholehfs?style=for-the-badge)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/rahuldhole/hfs?style=for-the-badge&logo=github&color=blue)](https://github.com/rahuldhole/hfs/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/rahuldhole/hfs/total?style=for-the-badge&logo=github&color=green)](https://github.com/rahuldhole/hfs/releases)
+[![License](https://img.shields.io/github/license/rahuldhole/hfs?style=for-the-badge&color=orange)](LICENSE)
 
-[📥 Download for macOS](#download) • [📥 Download for Windows](#download) • [📥 Download for Linux](#download)
+[📥 Download for macOS](#📥-download) • [📥 Download for Windows](#📥-download) • [📥 Download for Linux](#📥-download)
+
+---
+
+### "Finally, a way to move files between my laptop and PC without a USB drive or cloud overhead."
 
 </div>
 
----
+## ✨ Why HFS?
 
-## ✨ Features
+HFS is a lightweight, blazing-fast local file sharing utility. It turns your computer into a temporary file server that anyone on your Wi-Fi can access via their browser—no app installation required for recipients.
 
-| Feature | Description |
+| Feature | Why it matters |
 |---------|-------------|
-| 🚀 **One-Click Sharing** | Select files or folders and start sharing instantly |
-| 🌍 **LAN Access** | Anyone on your network can download via browser |
-| 📦 **Zip Downloads** | Download entire folders or multiple files as ZIP |
-| 🎨 **Modern UI** | Beautiful, professional dark-themed interface for both server and client |
-| 🔒 **Private & Secure** | No internet required, files never leave your network |
-| ⚡ **Lightweight** | Built with Rust + Tauri for blazing fast performance |
+| 🚀 **One-Click Sharing** | No complex setup. Select, start, share. |
+| 🌍 **Universal Access** | Works on any device with a browser: Phones, Tablets, TVs, PCs. |
+| 📦 **Batch Downloads** | Recipients can grab entire folders as a single ZIP. |
+| 🎨 **Modern Experience** | A sleek, dark-themed UI that feels like a premium app. |
+| 🔒 **Total Privacy** | Files never leave your local network. No tracking, no logs. |
+| ⚡ **Near-Native Speed** | Built with Rust/Tauri for minimal footprint and maximum performance. |
 
 ---
 
-## 📸 Screenshots
+## 📸 See it in action
 
 <div align="center">
 
-### Server Dashboard
-*Control your file server with an intuitive dark-themed interface*
+### Control Center (Server)
+*Manage your shared content with ease*
 
-![Server Dashboard](assets/server-dashboard.png)
+![Server Dashboard](public/assets/server-dashboard.png)
 
-### Client Interface  
-*Recipients browse and download files through a clean, dark-themed web UI*
+### Recipient View (Client)
+*A beautiful, responsive web interface for downloading*
 
-![Client Interface](assets/client-interface.png)
+![Client Interface](public/assets/client-interface.png)
 
 </div>
 
 ---
 
-## 📥 Download {#download}
+## 🚀 Get Started in Seconds
 
-Download the latest release for your platform:
+1. **Download & Install** – Get HFS for your platform [below](#📥-download).
+2. **Add Content** – Drag & drop or use the "Add" buttons to select files/folders.
+3. **Go Live** – Click "Start Server".
+4. **Share the Link** – Send the generated LAN URL to anyone on your network.
+5. **Done!** – They browse and download immediately.
 
-| Platform | Download |
+---
+
+## 📥 Download
+
+Get the official release for your operating system:
+
+| Platform | Recommended Package |
 |----------|----------|
-| **macOS (Apple Silicon)** | [Download .dmg](https://github.com/rahuldholehfs/releases/latest/download/HFS_aarch64.dmg) |
-| **macOS (Intel)** | [Download .dmg](https://github.com/rahuldholehfs/releases/latest/download/HFS_x64.dmg) |
-| **Windows** | [Download .msi](https://github.com/rahuldholehfs/releases/latest/download/HFS_x64.msi) |
-| **Linux (Debian/Ubuntu)** | [Download .deb](https://github.com/rahuldholehfs/releases/latest/download/HFS_amd64.deb) |
-| **Linux (AppImage)** | [Download .AppImage](https://github.com/rahuldholehfs/releases/latest/download/HFS_amd64.AppImage) |
-
-> 💡 **Note**: Replace `rahuldholehfs` with your actual GitHub repository path.
+| **macOS (Apple Silicon)** | [Download .dmg](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_aarch64.dmg) |
+| **macOS (Intel)** | [Download .dmg](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_x64.dmg) |
+| **Windows** | [Download .msi](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_x64.msi) |
+| **Linux (Debian/Ubuntu)** | [Download .deb](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_amd64.deb) |
+| **Linux (AppImage)** | [Download .AppImage](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_amd64.AppImage) |
 
 ---
 
-## 🚀 Quick Start
+<div align="center">
+  <h3>🛠️ Developer Resources</h3>
+</div>
 
-1. **Download & Install** – Get the app for your platform above
-2. **Add Files** – Click "Add Files" or "Add Folder" to select content
-3. **Start Server** – Click the blue "Start Server" button
-4. **Share the Link** – Copy the LAN URL and send it to recipients
-5. **Done!** – They can browse and download directly from their browser
+## ⚙️ Tech Stack
 
----
+HFS is built with modern, high-performance technologies:
+- **Core**: [Rust](https://rust-lang.org) with [Axum](https://github.com/tokio-rs/axum) for the web server.
+- **UI Framework**: [Nuxt 4](https://nuxt.com) + [Vue 3](https://vuejs.org) + [Tailwind CSS](https://tailwindcss.com).
+- **Desktop Bridge**: [Tauri 2](https://tauri.app).
+- **Iconography**: [Lucide](https://lucide.dev).
 
-## 🛠️ Tech Stack
+## 🛠️ Development Setup
 
-- **Frontend**: [Nuxt 4](https://nuxt.com) + [Vue 3](https://vuejs.org) + [Tailwind CSS](https://tailwindcss.com)
-- **Backend**: [Rust](https://rust-lang.org) + [Axum](https://github.com/tokio-rs/axum)
-- **Desktop**: [Tauri 2](https://tauri.app)
-- **Icons**: [Lucide](https://lucide.dev)
+If you want to build HFS from source or contribute:
 
----
+1. Clone the repo: `git clone https://github.com/rahuldhole/hfs.git`
+2. Install dependencies: `pnpm install`
+3. Run in dev mode: `pnpm tauri dev`
+
+For more detailed instructions, see [MAINTENANCE.md](MAINTENANCE.md).
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please read [MAINTENANCE.md](MAINTENANCE.md) for development setup.
-
----
+We love contributions! Whether it's a bug fix, feature request, or documentation improvement, please feel free to open a PR.
 
 ## 📄 License
 
-MIT License – see [LICENSE](LICENSE) for details.
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
 
 ---
 
 <div align="center">
 
-**Made with ❤️ for local file sharing**
+**Built with ❤️ by [Rahul Dhole](https://rahuldhole.com)**  
+*Making local file sharing simple again.*
 
 </div>

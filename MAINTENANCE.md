@@ -72,8 +72,11 @@ hfs/
 ├── app.vue                 # Main Vue component (server dashboard UI)
 ├── nuxt.config.ts          # Nuxt configuration
 ├── package.json            # Node dependencies
-├── assets/                 # Screenshots and static assets
+├── assets/                 # App-internal assets (CSS, etc.)
+├── public/
+│   └── assets/             # Screenshots and static marketing assets
 ├── src-tauri/
+```
 │   ├── Cargo.toml          # Rust dependencies
 │   ├── tauri.conf.json     # Tauri configuration
 │   ├── capabilities/       # Tauri permissions
