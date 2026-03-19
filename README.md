@@ -12,6 +12,27 @@
 
 ---
 
+## 📥 Download
+
+Get the official release for your operating system:
+
+| Platform | Recommended Package |
+|----------|----------|
+| **macOS (Apple Silicon)** | [Download .dmg](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_aarch64.dmg) |
+| **macOS (Intel)** | [Download .dmg](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_x64.dmg) |
+| **Windows** | [Download .msi](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_x64.msi) |
+| **Linux (Debian/Ubuntu)** | [Download .deb](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_amd64.deb) |
+| **Linux (AppImage)** | [Download .AppImage](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_amd64.AppImage) |
+
+> [!TIP]
+> ### 🍎 macOS Note
+> Since this is an open-source application without formal code signing, macOS may show a security warning. To run it:
+> 1. Right-click the `.dmg` file → **Open**
+> 2. Click **Open** in the security dialog
+> 3. Alternatively, run: `sudo xattr -cr /Applications/HFS.app`
+
+---
+
 ### "Finally, a way to move files between my laptop and PC without a USB drive or cloud overhead."
 
 </div>
@@ -25,7 +46,7 @@ HFS is a lightweight, blazing-fast local file sharing utility. It turns your com
 | 🚀 **One-Click Sharing** | No complex setup. Select, start, share. |
 | 🌍 **Universal Access** | Works on any device with a browser: Phones, Tablets, TVs, PCs. |
 | 📦 **Batch Downloads** | Recipients can grab entire folders as a single ZIP. |
-| 🎨 **Modern Experience** | A sleek, dark-themed UI that feels like a premium app. |
+| 🎨 **Modern Experience** | A sleek, professional UI that feels like a premium app. |
 | 🔒 **Total Privacy** | Files never leave your local network. No tracking, no logs. |
 | ⚡ **Near-Native Speed** | Built with Rust/Tauri for minimal footprint and maximum performance. |
 
@@ -59,27 +80,6 @@ HFS is a lightweight, blazing-fast local file sharing utility. It turns your com
 
 ---
 
-## 📥 Download
-
-Get the official release for your operating system:
-
-| Platform | Recommended Package |
-|----------|----------|
-| **macOS (Apple Silicon)** | [Download .dmg](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_aarch64.dmg) |
-| **macOS (Intel)** | [Download .dmg](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_x64.dmg) |
-| **Windows** | [Download .msi](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_x64.msi) |
-| **Linux (Debian/Ubuntu)** | [Download .deb](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_amd64.deb) |
-| **Linux (AppImage)** | [Download .AppImage](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_amd64.AppImage) |
-
-> [!TIP]
-> ### 🍎 macOS Note
-> Since this is an open-source application without formal code signing, macOS may show a security warning. To run it:
-> 1. Right-click the `.dmg` file → **Open**
-> 2. Click **Open** in the security dialog
-> 3. Alternatively, run: `sudo xattr -cr /Applications/HFS.app`
-
----
-
 <div align="center">
   <h3>🛠️ Developer Resources</h3>
 </div>
@@ -108,7 +108,7 @@ We love contributions! Whether it's a bug fix, feature request, or documentation
 
 ## 📄 License
 
-Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
+Distributed under the MIT License. See [LICENSE](LICENSE.md) for more information.
 
 ---
 
