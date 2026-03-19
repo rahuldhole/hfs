@@ -71,6 +71,13 @@ Get the official release for your operating system:
 | **Linux (Debian/Ubuntu)** | [Download .deb](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_amd64.deb) |
 | **Linux (AppImage)** | [Download .AppImage](https://github.com/rahuldhole/hfs/releases/latest/download/HFS_amd64.AppImage) |
 
+> [!TIP]
+> ### 🍎 macOS Note
+> Since this is an open-source application without formal code signing, macOS may show a security warning. To run it:
+> 1. Right-click the `.dmg` file → **Open**
+> 2. Click **Open** in the security dialog
+> 3. Alternatively, run: `sudo xattr -cr /Applications/HFS.app`
+
 ---
 
 <div align="center">
