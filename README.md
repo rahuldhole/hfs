@@ -92,13 +92,13 @@ HFS turns your local machine into a temporary file server. Anyone on your local 
 2. `pnpm install`
 3. `pnpm tauri dev`
 
-*See [MAINTENANCE.md](MAINTENANCE.md) for deeper technical insights.*
+*See [MAINTENANCE.md](https://github.com/rahuldhole/hfs/blob/main/MAINTENANCE.md) for deeper technical insights.*
 
 ### 🤝 Contributing
 Contributions are always welcome! Feel free to open a PR or report issues on GitHub.
 
 ### 📄 License
-This project is licensed under the MIT License - see [LICENSE.md](LICENSE.md) for details.
+This project is licensed under the MIT License - see [LICENSE](https://github.com/rahuldhole/hfs/blob/main/LICENSE) for details.
 
 ---
 
